@@ -1,0 +1,87 @@
+diff --git a/node_modules/expo-asset/build/AssetUris.js b/node_modules/expo-asset/build/AssetUris.js
+index 54cc343..2cb7d1c 100644
+--- a/node_modules/expo-asset/build/AssetUris.js
++++ b/node_modules/expo-asset/build/AssetUris.js
+@@ -33,25 +33,20 @@ export function getFileExtension(url) {
+  * to tell the OS to open the URLs in the the Expo client.
+  */
+ export function getManifestBaseUrl(manifestUrl) {
+-    const urlObject = new URL(manifestUrl);
+-    let nextProtocol = urlObject.protocol;
++    // Read-only URL parsing (Hermes on RN 0.81+ has getter-only setters)
++    var urlObject = new URL(manifestUrl);
++    var protocol = urlObject.protocol;
+     // Change the scheme to http(s) if it is exp(s)
+-    if (nextProtocol === 'exp:') {
+-        nextProtocol = 'http:';
++    if (protocol === 'exp:') {
++        protocol = 'http:';
+     }
+-    else if (nextProtocol === 'exps:') {
+-        nextProtocol = 'https:';
++    else if (protocol === 'exps:') {
++        protocol = 'https:';
+     }
+-    urlObject.protocol = nextProtocol;
+-    // Trim filename, query parameters, and fragment, if any
+-    const directory = urlObject.pathname.substring(0, urlObject.pathname.lastIndexOf('/') + 1);
+-    urlObject.pathname = directory;
+-    urlObject.search = '';
+-    urlObject.hash = '';
+-    // The URL spec doesn't allow for changing the protocol to `http` or `https`
+-    // without a port set so instead, we'll just swap the protocol manually.
+-    return urlObject.protocol !== nextProtocol
+-        ? urlObject.href.replace(urlObject.protocol, nextProtocol)
+-        : urlObject.href;
++    // Strip filename, query parameters, and fragment from the path
++    var pathname = urlObject.pathname;
++    var directory = pathname.substring(0, pathname.lastIndexOf('/') + 1);
++    // Build result from read-only components to avoid URL mutation
++    return protocol + '//' + urlObject.host + directory;
+ }
+ //# sourceMappingURL=AssetUris.js.map
+\ No newline at end of file
+diff --git a/node_modules/expo-asset/src/AssetUris.ts b/node_modules/expo-asset/src/AssetUris.ts
+index b3810c7..ac96866 100644
+--- a/node_modules/expo-asset/src/AssetUris.ts
++++ b/node_modules/expo-asset/src/AssetUris.ts
+@@ -38,26 +38,21 @@ export function getFileExtension(url: string): string {
+  * to tell the OS to open the URLs in the the Expo client.
+  */
+ export function getManifestBaseUrl(manifestUrl: string): string {
++  // Read-only URL parsing (Hermes on RN 0.81+ has getter-only URL setters)
+   const urlObject = new URL(manifestUrl);
+ 
+-  let nextProtocol = urlObject.protocol;
++  let protocol = urlObject.protocol;
+   // Change the scheme to http(s) if it is exp(s)
+-  if (nextProtocol === 'exp:') {
+-    nextProtocol = 'http:';
+-  } else if (nextProtocol === 'exps:') {
+-    nextProtocol = 'https:';
++  if (protocol === 'exp:') {
++    protocol = 'http:';
++  } else if (protocol === 'exps:') {
++    protocol = 'https:';
+   }
+-  urlObject.protocol = nextProtocol;
+-
+-  // Trim filename, query parameters, and fragment, if any
+-  const directory = urlObject.pathname.substring(0, urlObject.pathname.lastIndexOf('/') + 1);
+-  urlObject.pathname = directory;
+-  urlObject.search = '';
+-  urlObject.hash = '';
+-
+-  // The URL spec doesn't allow for changing the protocol to `http` or `https`
+-  // without a port set so instead, we'll just swap the protocol manually.
+-  return urlObject.protocol !== nextProtocol
+-    ? urlObject.href.replace(urlObject.protocol, nextProtocol)
+-    : urlObject.href;
++
++  // Strip filename, query parameters, and fragment from the path
++  const pathname = urlObject.pathname;
++  const directory = pathname.substring(0, pathname.lastIndexOf('/') + 1);
++
++  // Build result from read-only components (avoids URL mutation for Hermes compat)
++  return protocol + '//' + urlObject.host + directory;
+ }

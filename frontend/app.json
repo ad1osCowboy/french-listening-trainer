@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "French Listening Trainer",
+    "slug": "french-listening-trainer",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.frenchlistening.trainer"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.frenchlistening.trainer"
+    },
+    "experiments": {
+      "reactCompiler": true
+    },
+    "plugins": [
+      "expo-av",
+      "expo-document-picker",
+      "expo-asset"
+    ]
+  }
+}
