@@ -36,6 +36,11 @@ Connect your GitHub repo and configure:
 | **Start Command** | `uvicorn main:app --host 0.0.0.0 --port $PORT` |
 | **Plan** | Free |
 
+> The repo root contains `runtime.txt` which pins Python to 3.12.13.
+> Render defaults to Python 3.14 for new services, but pydantic-core
+> has no pre-built wheels for 3.14 yet, causing source-build failures
+> on Render's read-only filesystem. Do NOT remove this file.
+
 ---
 
 ## 3. Environment Variables
