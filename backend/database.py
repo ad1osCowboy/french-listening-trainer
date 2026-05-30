@@ -1,6 +1,6 @@
 """
-SQLite database setup with SQLAlchemy.
-Switch to Supabase by changing DATABASE_URL env var in production.
+Database setup with SQLAlchemy.
+Uses SQLite locally; set DATABASE_URL to a PostgreSQL URL (e.g. Supabase) in production.
 """
 
 from sqlalchemy import create_engine
@@ -9,10 +9,16 @@ import os
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./french_trainer.db")
 
-# check_same_thread only needed for SQLite
+is_sqlite = DATABASE_URL.startswith("sqlite")
+
+connect_args: dict = {}
+if is_sqlite:
+    connect_args["check_same_thread"] = False
+
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {},
+    connect_args=connect_args,
+    pool_pre_ping=not is_sqlite,  # keep PostgreSQL connections healthy
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
