@@ -32,7 +32,7 @@ Connect your GitHub repo and configure:
 | **Region** | Oregon (US West) |
 | **Runtime** | Python 3 |
 | **Root Directory** | `backend` |
-| **Build Command** | `apt-get update && apt-get install -y ffmpeg && pip install -r requirements.txt` |
+| **Build Command** | `pip install -r requirements.txt` |
 | **Start Command** | `uvicorn main:app --host 0.0.0.0 --port $PORT` |
 | **Plan** | Free |
 
@@ -108,8 +108,10 @@ Free Render services spin down after 15 minutes of inactivity. First request aft
 ### SQLite is ephemeral
 The database resets on each deploy. For persistent storage, upgrade to Render's PostgreSQL.
 
-### FFmpeg
-The build command includes `apt-get install -y ffmpeg` so audio splitting works on Render.
+### FFmpeg (optional)
+FFmpeg is **not required**. The backend gracefully falls back to serving the full audio file when ffmpeg is unavailable. Audio segment extraction (per-question / per-sentence clips) only works when ffmpeg is present.
+
+If you need ffmpeg, deploy via **Docker** instead of Render's native Python runtime — the Python runtime has a read-only filesystem that prevents `apt-get install`.
 
 ---
 

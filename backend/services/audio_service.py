@@ -2,6 +2,8 @@
 Audio processing utilities using FFmpeg for segment extraction.
 """
 
+import os
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -9,7 +11,22 @@ UPLOAD_DIR = Path("uploads")
 SEGMENT_DIR = Path("uploads/segments")
 SENTENCE_DIR = Path("uploads/sentences")
 
-FFMPEG_PATH = "/usr/local/bin/ffmpeg"
+
+def _resolve_ffmpeg() -> str:
+    """Find ffmpeg on the current platform. Falls back to common paths."""
+    env_path = os.getenv("FFMPEG_PATH")
+    if env_path:
+        return env_path
+    in_path = shutil.which("ffmpeg")
+    if in_path:
+        return in_path
+    for candidate in ["/usr/local/bin/ffmpeg", "/usr/bin/ffmpeg"]:
+        if Path(candidate).exists():
+            return candidate
+    return "ffmpeg"  # last-resort: hope it's on PATH at runtime
+
+
+FFMPEG_PATH = _resolve_ffmpeg()
 
 for d in [UPLOAD_DIR, SEGMENT_DIR, SENTENCE_DIR]:
     d.mkdir(parents=True, exist_ok=True)
@@ -17,18 +34,24 @@ for d in [UPLOAD_DIR, SEGMENT_DIR, SENTENCE_DIR]:
 
 def check_ffmpeg() -> dict:
     """Diagnostic: verify ffmpeg exists and is executable. Returns status dict."""
-    ffmpeg = Path(FFMPEG_PATH)
-    if not ffmpeg.exists():
+    ffmpeg = Path(FFMPEG_PATH) if FFMPEG_PATH != "ffmpeg" else None
+    if ffmpeg and not ffmpeg.exists():
         return {
             "available": False,
             "path": FFMPEG_PATH,
-            "error": f"ffmpeg not found at {FFMPEG_PATH}. Install with: brew install ffmpeg",
+            "error": f"ffmpeg not found (checked PATH and common locations).",
         }
-    if not ffmpeg.is_file():
+    if ffmpeg and not ffmpeg.is_file():
         return {
             "available": False,
             "path": FFMPEG_PATH,
             "error": f"{FFMPEG_PATH} exists but is not a regular file.",
+        }
+    if not ffmpeg:
+        return {
+            "available": False,
+            "path": "ffmpeg (PATH lookup)",
+            "error": "ffmpeg not found on PATH or in common locations.",
         }
     try:
         result = subprocess.run([FFMPEG_PATH, "-version"], capture_output=True, text=True, timeout=5)

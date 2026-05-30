@@ -66,10 +66,8 @@ def on_startup():
     if ffmpeg_status["available"]:
         print(f"  [OK] FFmpeg found: {ffmpeg_status['version']}")
     else:
-        print(f"  [FAIL] FFmpeg: {ffmpeg_status['error']}")
-        print(f"         Expected at: {ffmpeg_status['path']}")
-        print(f"         Install: brew install ffmpeg")
-        print(f"         Audio cutting will NOT work until fixed.")
+        print(f"  [WARN] FFmpeg: {ffmpeg_status['error']}")
+        print(f"         Audio segment extraction will use full-audio fallback.")
 
     # 3. API key checks
     api_status = check_api_key()
